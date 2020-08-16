@@ -6,7 +6,7 @@ const websiteElement = document.getElementById('website-name')
 const websiteUrlElement = document.getElementById('website-url')
 const bookmarksContainer = document.getElementById('bookmarks-container')
 
-let bookmarks = []
+let bookmarks = {}
 
 //Show Modal, Focus On Input
 function showModal() {
@@ -40,33 +40,35 @@ function buildBookmarks() {
     //Remove All Bookmarks Elements
     bookmarksContainer.textContent = ''
     //Build Items
-    bookmarks.forEach((bookmark) => {
-        const { name, url } = bookmark
-        //Item
-        const item = document.createElement('div')
-        item.classList.add('item')
-        //Close
-        const closeIcon = document.createElement('i')
-        closeIcon.classList.add('fas', 'fa-times')
-        closeIcon.setAttribute('title', 'Delete Bookmark')
-        closeIcon.setAttribute('onclick', `deleteBookmark('${url}')`)
-        //Favicon / Link Container
-        const linkInfo = document.createElement('div')
-        linkInfo.classList.add('name')
-        //Favicon
-        const favicon = document.createElement('img')
-        favicon.setAttribute('src', `https://s2.googleusercontent.com/s2/favicons?domain=${url}`)
-        favicon.setAttribute('alt', 'Favicon')
-        //Link
-        const link = document.createElement('a')
-        link.setAttribute('href', `${url}`)
-        link.setAttribute('target', '_blank')
-        link.textContent = name
-        //Append To Bookmarks Container
-        linkInfo.append(favicon, link)
-        item.append(closeIcon,linkInfo)
-        bookmarksContainer.appendChild(item)
-    })
+    Object.keys(bookmarks).forEach((id) => {
+
+		const { name, url } = bookmarks[id]
+
+		// Item
+		const item = document.createElement('div')
+		item.classList.add('item')
+		// Close Icon
+		const closeIcon = document.createElement('i')
+		closeIcon.classList.add('fas', 'fa-times')
+		closeIcon.setAttribute('title', 'Delete Bookmark')
+		closeIcon.setAttribute('onclick', `deleteBookmark('${id}')`)
+		// Favicon / Link Container
+		const linkInfo = document.createElement('div')
+		linkInfo.classList.add('name')
+		// Favicon
+		const favicon = document.createElement('img')
+		favicon.setAttribute('src', `https://s2.googleusercontent.com/s2/favicons?domain=${url}`)
+		favicon.setAttribute('alt', 'Favicon')
+		// Link
+		const link = document.createElement('a')
+		link.setAttribute('href', `${url}`)
+		link.setAttribute('target', '_blank')
+		link.textContent = name
+		// Append to bookmarks container
+		linkInfo.append(favicon, link)
+		item.append(closeIcon, linkInfo)
+		bookmarksContainer.appendChild(item)
+	})
 }
 
 //Fetch Bookmarks From Local Storage
@@ -75,25 +77,26 @@ function fetchBookmarks() {
     if (localStorage.getItem('bookmarks')) {
         bookmarks = JSON.parse(localStorage.getItem('bookmarks'))
     }else {
-        //Create Bookmars Array In Local Storage
-        bookmarks = [
-            {
-                name: 'Westcostyle',
-                url: 'http://westcostyle.com',
-            },
-        ]
+        //Create Bookmars Object In Local Storage
+        const id = `http://westcostyle.com`
+
+		bookmarks[id] = {
+			name: 'westcostyle',
+			url: 'http://westcostyle.com',
+        }
+        
         localStorage.setItem('bookmarks', JSON.stringify(bookmarks))
     }
     buildBookmarks()
 }
 
 //Delete Bookmarks
-function deleteBookmark(url) {
-    bookmarks.forEach((bookmark, i) => {
-        if(bookmark.url === url) {
-            bookmarks.splice(i, 1)
-        }
-    })
+function deleteBookmark(id) {
+    // Loop through the bookmarks array
+    if (bookmarks[id]) {
+		delete bookmarks[id]
+    }
+    
     //Update Bookmarks Array in Local Storage, Re-Populate DOM
     localStorage.setItem('bookmarks', JSON.stringify(bookmarks))
     fetchBookmarks()
@@ -115,7 +118,7 @@ function storeBookmark(e) {
         name: nameValue,
         url: urlValue
     }
-    bookmarks.push(bookmark)
+    bookmarks[urlValue] = bookmark
     console.log(bookmarks)
     localStorage.setItem('bookmarks', JSON.stringify(bookmarks))
     fetchBookmarks()
